@@ -92,21 +92,27 @@ fastify.get('/cities/:cityId/infos', {
     const insightsData = await insightsResp.json();
 
     const weatherResp = await fetch(`https://api-ugi2pflmha-ew.a.run.app/weather-predictions?cityIdentifier=${cityId}&apiKey=${apiKey}`);
+    if (!weatherResp.ok) {
+      return res.status(500).send({ error: 'Weather service unavailable' });
+    }
     const weatherData = await weatherResp.json();
+
+    const today = new Date().toISOString().split('T')[0];
+    const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
 
     return res.send({
       coordinates: [
         insightsData.coordinates[0].latitude,
         insightsData.coordinates[0].longitude
       ],
-      population: insightsData.population,
+      population: parseInt(insightsData.population),
       knownFor: insightsData.knownFor.map(item => item.content),
       weatherPredictions: weatherData[0].predictions.slice(0,2).map(prediction => ({
-        when: prediction.date === new Date().toISOString().split('T')[0] ? 'today' : 'tomorrow',
-        min: prediction.minTemperature,
-        max: prediction.maxTemperature,
+        when: prediction.date === today ? 'today' : 'tomorrow',
+        min: parseFloat(prediction.minTemperature),
+        max: parseFloat(prediction.maxTemperature)
       })),
-      recipes: recipesByCity[cityId] || [],
+      recipes: recipesByCity[cityId] || []
     });
   } catch (error) {
     console.error(error);
