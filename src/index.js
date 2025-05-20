@@ -98,7 +98,6 @@ fastify.get('/cities/:cityId/infos', {
     const weatherData = await weatherResp.json();
 
     const today = new Date().toISOString().split('T')[0];
-    const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
 
     const weatherPredictions = weatherData[0].predictions.slice(0,2).map(prediction => ({
       when: prediction.date === today ? 'today' : 'tomorrow',
