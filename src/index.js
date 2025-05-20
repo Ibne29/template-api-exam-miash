@@ -100,18 +100,20 @@ fastify.get('/cities/:cityId/infos', {
     const today = new Date().toISOString().split('T')[0];
     const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
 
+    const weatherPredictions = weatherData[0].predictions.slice(0,2).map(prediction => ({
+      when: prediction.date === today ? 'today' : 'tomorrow',
+      min: parseFloat(prediction.minTemperature),
+      max: parseFloat(prediction.maxTemperature)
+    }));
+
     return res.send({
       coordinates: [
-        insightsData.coordinates[0].latitude,
-        insightsData.coordinates[0].longitude
+        parseFloat(insightsData.coordinates[0].latitude),
+        parseFloat(insightsData.coordinates[0].longitude)
       ],
       population: parseInt(insightsData.population),
       knownFor: insightsData.knownFor.map(item => item.content),
-      weatherPredictions: weatherData[0].predictions.slice(0,2).map(prediction => ({
-        when: prediction.date === today ? 'today' : 'tomorrow',
-        min: parseFloat(prediction.minTemperature),
-        max: parseFloat(prediction.maxTemperature)
-      })),
+      weatherPredictions,
       recipes: recipesByCity[cityId] || []
     });
   } catch (error) {
